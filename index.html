@@ -21,16 +21,13 @@
     <meta name="color-scheme" content="dark" />
     <meta name="referrer" content="no-referrer" />
 
-    <!-- Icons -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    <!-- Fullscreen / app-like on mobile -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="presentday" />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="presentday" />
     <meta property="og:title" content="presentday ∷ present time" />
@@ -41,7 +38,6 @@
     <meta property="og:url" content="https://presentday.cc/" />
     <meta property="og:locale" content="en_US" />
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="presentday ∷ present time" />
     <meta
@@ -52,16 +48,13 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- Background video layer -->
     <video id="video" muted autoplay playsinline></video>
 
-    <!-- CRT / Wired overlays -->
     <div class="grain" aria-hidden="true"></div>
     <div class="tracking" aria-hidden="true"></div>
     <div class="scanlines" aria-hidden="true"></div>
     <div class="vignette" aria-hidden="true"></div>
 
-    <!-- Cinematic letterbox bars with HUD -->
     <header class="bar bar--top">
       <span class="bar__left">presentday.cc</span>
       <span class="bar__right">
@@ -83,13 +76,11 @@
       </span>
     </footer>
 
-    <!-- Lain easter egg -->
     <span class="wired" aria-hidden="true">present day, present time</span>
 
-    <!-- Sound hint (autoplay starts muted) -->
     <button id="sound-hint" class="sound-hint" type="button">[ click to enable sound ]</button>
 
-    <!-- Fatal playback error readout (visible on devices without devtools) -->
+    <!-- Error readout, shown on fatal playback failure (devices have no devtools) -->
     <div id="err" class="err" hidden></div>
 
     <script type="module" src="/src/main.js"></script>

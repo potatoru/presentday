@@ -91,7 +91,6 @@ if (Hls.isSupported()) {
   showError('HLS is not supported in this browser');
 }
 
-// ---------- Live clock (Tokyo / JST) ----------
 const clock = document.getElementById('clock');
 const timeFmt = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Asia/Tokyo',
@@ -107,7 +106,6 @@ function tick() {
 tick();
 setInterval(tick, 1000);
 
-// ---------- Now playing (plaza.one) ----------
 const nowPlaying = document.getElementById('now-playing');
 const npArtist = nowPlaying.querySelector('.np-artist');
 const npTitle = nowPlaying.querySelector('.np-title');
@@ -131,10 +129,8 @@ async function updateNowPlaying() {
 updateNowPlaying();
 setInterval(updateNowPlaying, 10_000);
 
-// ---------- Enable sound on first interaction ----------
-// Autoplay must start muted; unmute once the user interacts. Chrome only honors
-// the unmute inside a real user gesture — use `click` (a full press+release),
-// which grants activation more reliably than `pointerdown`.
+// Chrome only honors an unmute inside a real user gesture — use `click` (a full
+// press+release), which grants activation more reliably than `pointerdown`.
 const soundHint = document.getElementById('sound-hint');
 
 function stopListening() {
@@ -152,7 +148,6 @@ function enableSound() {
     return;
   }
   p.then(() => {
-    // Unmuted playback accepted — done.
     soundHint.classList.add('hidden');
     stopListening();
   }).catch(() => {
