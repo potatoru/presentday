@@ -15,6 +15,13 @@ function kickPlay() {
   if (p) p.catch(() => {}); // rejection is fine; a user tap will start it later
 }
 
+// Surface a fatal, unrecoverable error on screen (mobile has no devtools).
+const errBox = document.getElementById('err');
+function showError(msg) {
+  errBox.textContent = msg;
+  errBox.hidden = false;
+}
+
 if (Hls.isSupported()) {
   const hls = new Hls();
   hls.loadSource(src);
@@ -22,19 +29,36 @@ if (Hls.isSupported()) {
 
   hls.on(Hls.Events.MANIFEST_PARSED, kickPlay);
 
+  let mediaRecoveries = 0;
   hls.on(Hls.Events.ERROR, (_event, data) => {
-    if (data.fatal) {
-      console.error('HLS fatal error:', data.type, data.details);
-      switch (data.type) {
-        case Hls.ErrorTypes.NETWORK_ERROR:
-          hls.startLoad();
-          break;
-        case Hls.ErrorTypes.MEDIA_ERROR:
+    if (!data.fatal) return;
+    console.error('HLS fatal error:', data.type, data.details);
+
+    // Codec the browser's MSE can't handle — recovery is futile, so stop and report.
+    if (
+      data.details === Hls.ErrorDetails.BUFFER_INCOMPATIBLE_CODECS_ERROR ||
+      data.details === Hls.ErrorDetails.BUFFER_ADD_CODEC_ERROR
+    ) {
+      showError('playback error: codec unsupported\n' + data.details);
+      hls.destroy();
+      return;
+    }
+
+    switch (data.type) {
+      case Hls.ErrorTypes.NETWORK_ERROR:
+        hls.startLoad();
+        break;
+      case Hls.ErrorTypes.MEDIA_ERROR:
+        if (mediaRecoveries++ < 3) {
           hls.recoverMediaError();
-          break;
-        default:
+        } else {
+          showError('playback error: media\n' + data.details);
           hls.destroy();
-      }
+        }
+        break;
+      default:
+        showError('playback error: ' + data.type + '\n' + data.details);
+        hls.destroy();
     }
   });
 
@@ -60,8 +84,11 @@ if (Hls.isSupported()) {
   // Safari / iOS — native HLS support
   video.src = src;
   video.addEventListener('loadedmetadata', kickPlay);
+  video.addEventListener('error', () => {
+    showError('playback error\n' + (video.error?.message ?? 'unknown'));
+  });
 } else {
-  console.error('HLS is not supported in this browser');
+  showError('HLS is not supported in this browser');
 }
 
 // ---------- Live clock (Tokyo / JST) ----------

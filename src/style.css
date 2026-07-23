@@ -334,6 +334,30 @@ body {
   display: none;
 }
 
+/* ---------- Fatal error readout ---------- */
+.err {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  max-width: 80vw;
+  padding: 1em 1.4em;
+  border: 1px solid rgba(230, 89, 201, 0.4);
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--magenta);
+  font-size: clamp(11px, 1.4vw, 15px);
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+  text-align: center;
+  white-space: pre-line;
+  text-shadow: 0 0 8px rgba(230, 89, 201, 0.4);
+}
+
+.err[hidden] {
+  display: none;
+}
+
 /* ---------- Narrow screens (phones) ---------- */
 @media (max-width: 600px) {
   .bar {
