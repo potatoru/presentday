@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+
+    <title>presentday ∷ present time</title>
+    <meta
+      name="description"
+      content="An endless vaporwave transmission — slowed, submerged, looping through the small hours. Original music over drifting city light. Present day, present time."
+    />
+    <meta
+      name="keywords"
+      content="vaporwave, ambient, lo-fi, slowed, chillwave, night drive, aesthetic, 蒸気波, transmission"
+    />
+    <meta name="author" content="presentday" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="referrer" content="no-referrer" />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- Fullscreen / app-like on mobile -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="presentday" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="presentday" />
+    <meta property="og:title" content="presentday ∷ present time" />
+    <meta
+      property="og:description"
+      content="An endless vaporwave transmission — slowed, submerged, looping through the small hours. Present day, present time."
+    />
+    <meta property="og:url" content="https://presentday.cc/" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="presentday ∷ present time" />
+    <meta
+      name="twitter:description"
+      content="An endless vaporwave transmission — slowed, submerged, looping through the small hours."
+    />
+
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Background video layer -->
+    <video id="video" muted autoplay playsinline></video>
+
+    <!-- CRT / Wired overlays -->
+    <div class="grain" aria-hidden="true"></div>
+    <div class="tracking" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <!-- Cinematic letterbox bars with HUD -->
+    <header class="bar bar--top">
+      <span class="bar__left">presentday.cc</span>
+      <span class="bar__right">
+        <span class="loc">渋谷 SHIBUYA</span>
+        <span class="sep">・</span>
+        <span class="live"><i class="rec"></i>LIVE</span>
+        <span class="sep">・</span>
+        <span id="clock" class="clock">--:--:--</span>
+        <span class="tz">JST</span>
+      </span>
+    </header>
+
+    <footer class="bar bar--bottom">
+      <span id="now-playing" class="now-playing" hidden>
+        <span class="np-icon">♪</span>
+        <span class="np-artist"></span>
+        <span class="np-sep">—</span>
+        <span class="np-title"></span>
+      </span>
+    </footer>
+
+    <!-- Lain easter egg -->
+    <span class="wired" aria-hidden="true">present day, present time</span>
+
+    <!-- Sound hint (autoplay starts muted) -->
+    <button id="sound-hint" class="sound-hint" type="button">[ click to enable sound ]</button>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

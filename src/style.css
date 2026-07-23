@@ -1,0 +1,379 @@
+@font-face {
+  font-family: 'Share Tech Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/share-tech-mono-latin.woff2') format('woff2');
+}
+
+:root {
+  --cyan: #58e6e0;
+  --magenta: #e659c9;
+  /* letterbox bar height — clamped so bars stay usable on short/tall screens */
+  --bar-h: clamp(40px, 9vh, 100px);
+  --ink: rgba(200, 240, 240, 0.82);
+  --ink-dim: rgba(160, 200, 200, 0.45);
+  --grain-opacity: 0.09; /* interference intensity — bump up for more noise */
+  --font-mono: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', Consolas,
+    monospace;
+}
+
+/* Use dynamic viewport height where supported (avoids mobile address-bar jump) */
+@supports (height: 100dvh) {
+  :root {
+    --bar-h: clamp(40px, 9dvh, 100px);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  cursor: default;
+  user-select: none;
+}
+
+/* ---------- Background video ---------- */
+#video {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* dynamic vh: stable under mobile browser chrome */
+  /* cover — fill the screen; landscape source acts as a background */
+  object-fit: cover;
+  background: #000;
+  z-index: 0;
+}
+
+/*
+ * Portrait screens: switch to `contain` so the horizontal Shibuya feed stays
+ * fully visible instead of being cropped to a narrow vertical slice.
+ * The resulting letterbox merges with the design's black bars.
+ */
+@media (orientation: portrait) {
+  #video {
+    object-fit: contain;
+  }
+}
+
+/* ---------- CRT overlays ---------- */
+/* Film grain: fractal-noise tile shuffled at a low frame rate to keep it cheap */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+  animation: grain-shift 0.55s steps(1) infinite;
+}
+
+@keyframes grain-shift {
+  0% {
+    background-position: 0 0;
+  }
+  25% {
+    background-position: -32px 12px;
+  }
+  50% {
+    background-position: 22px -24px;
+  }
+  75% {
+    background-position: -12px 28px;
+  }
+  100% {
+    background-position: 26px 6px;
+  }
+}
+
+/* Tracking dropout: a soft band that sweeps down rarely, like signal glitch */
+.tracking {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 9vh;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(88, 230, 224, 0.05) 40%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(230, 89, 201, 0.05) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  mix-blend-mode: screen;
+  animation: tracking-sweep 19s ease-in infinite;
+}
+
+@keyframes tracking-sweep {
+  0%,
+  93% {
+    transform: translateY(-12vh);
+    opacity: 0;
+  }
+  94% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(112vh);
+    opacity: 0;
+  }
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.18) 3px,
+    rgba(0, 0, 0, 0.18) 4px
+  );
+  mix-blend-mode: multiply;
+  animation: flicker 5s steps(60) infinite;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.92;
+  }
+  52% {
+    opacity: 1;
+  }
+}
+
+/* ---------- Letterbox bars ---------- */
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: var(--bar-h);
+  z-index: 3;
+  background: #000;
+  display: flex;
+  align-items: center;
+  padding: 0 3vw;
+  font-size: clamp(11px, 1.35vw, 16px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bar--top {
+  top: 0;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(88, 230, 224, 0.22);
+  box-shadow: 0 1px 12px rgba(88, 230, 224, 0.12);
+}
+
+.bar--bottom {
+  bottom: 0;
+  justify-content: center;
+  border-top: 1px solid rgba(230, 89, 201, 0.22);
+  box-shadow: 0 -1px 12px rgba(230, 89, 201, 0.12);
+}
+
+.bar__left {
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(88, 230, 224, 0.5);
+}
+
+.bar__right {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  color: var(--ink);
+}
+
+.sep {
+  color: var(--ink-dim);
+}
+.loc {
+  color: var(--ink);
+}
+.tz {
+  color: var(--ink-dim);
+}
+.clock {
+  color: var(--cyan);
+  min-width: 8ch;
+  text-align: right;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--magenta);
+  text-shadow: 0 0 8px rgba(230, 89, 201, 0.5);
+}
+
+.rec {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--magenta);
+  box-shadow: 0 0 8px var(--magenta);
+  animation: blink 1.6s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+/* ---------- Now playing (bottom bar) ---------- */
+.now-playing {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55em;
+  max-width: 90vw;
+  font-size: clamp(10px, 1.15vw, 14px);
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.now-playing[hidden] {
+  display: none;
+}
+
+.np-icon {
+  color: var(--magenta);
+  text-shadow: 0 0 8px rgba(230, 89, 201, 0.5);
+}
+
+.np-artist {
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.np-sep {
+  color: var(--ink-dim);
+}
+
+.np-title {
+  color: var(--cyan);
+  text-shadow: 0 0 6px rgba(88, 230, 224, 0.25);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Lain easter egg ---------- */
+.wired {
+  position: fixed;
+  right: 3vw;
+  bottom: calc(var(--bar-h) + 1.4vh);
+  z-index: 3;
+  font-size: clamp(9px, 1vw, 12px);
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  text-transform: lowercase;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---------- Sound hint ---------- */
+.sound-hint {
+  position: fixed;
+  left: 3vw;
+  bottom: calc(var(--bar-h) + 1.4vh);
+  z-index: 4;
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 1vw, 12px);
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-shadow: 0 0 8px rgba(88, 230, 224, 0.5);
+  animation: blink 2s steps(1) infinite;
+}
+
+.sound-hint.hidden {
+  display: none;
+}
+
+/* ---------- Narrow screens (phones) ---------- */
+@media (max-width: 600px) {
+  .bar {
+    padding: 0 4vw;
+    letter-spacing: 0.1em;
+  }
+
+  .bar__right {
+    gap: 0.5em;
+  }
+
+  /* Trim the HUD so it never overflows: keep LIVE + clock, drop the rest */
+  .loc,
+  .loc + .sep,
+  .tz {
+    display: none;
+  }
+
+  /* Keep the corner labels from colliding on very narrow widths */
+  .wired {
+    max-width: 45vw;
+    text-align: right;
+  }
+  .sound-hint {
+    max-width: 45vw;
+    text-align: left;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .scanlines,
+  .grain,
+  .rec,
+  .sound-hint {
+    animation: none;
+  }
+
+  /* Drop the sweeping glitch entirely for motion-sensitive users */
+  .tracking {
+    display: none;
+  }
+}
