@@ -1,4 +1,6 @@
-import Hls from 'hls.js';
+// Light build: drops alt-audio, subtitles, EME/DRM, CMCD — not needed for a
+// single fullscreen player. Same API, smaller bundle.
+import Hls from 'hls.js/dist/hls.light.mjs';
 
 // Default stream, can be overridden via ?src=<url>
 const DEFAULT_SRC = 'https://presentday.cc/hls/index.m3u8';
