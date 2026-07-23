@@ -10,16 +10,18 @@
     <title>presentday ∷ present time</title>
     <meta
       name="description"
-      content="An endless vaporwave transmission — slowed, submerged, looping through the small hours. Original music over drifting city light. Present day, present time."
+      content="An endless vaporwave transmission over a live view of a city in Japan — music slowed and submerged. Present day, present time."
     />
     <meta
       name="keywords"
-      content="vaporwave, ambient, lo-fi, slowed, chillwave, night drive, aesthetic, 蒸気波, transmission"
+      content="vaporwave, ambient, lo-fi, slowed, chillwave, night drive, aesthetic, 蒸気波, transmission, japan, live stream, cityscape, streets"
     />
     <meta name="author" content="presentday" />
     <meta name="theme-color" content="#000000" />
     <meta name="color-scheme" content="dark" />
     <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://presentday.cc/" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
@@ -33,7 +35,7 @@
     <meta property="og:title" content="presentday ∷ present time" />
     <meta
       property="og:description"
-      content="An endless vaporwave transmission — slowed, submerged, looping through the small hours. Present day, present time."
+      content="An endless vaporwave transmission over a live view of a city in Japan. Present day, present time."
     />
     <meta property="og:url" content="https://presentday.cc/" />
     <meta property="og:locale" content="en_US" />
@@ -42,12 +44,32 @@
     <meta name="twitter:title" content="presentday ∷ present time" />
     <meta
       name="twitter:description"
-      content="An endless vaporwave transmission — slowed, submerged, looping through the small hours."
+      content="An endless vaporwave transmission over a live view of a city in Japan."
     />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "presentday",
+        "url": "https://presentday.cc/",
+        "description": "An endless vaporwave transmission over a live view of a city in Japan.",
+        "inLanguage": "en"
+      }
+    </script>
 
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
+    <h1 class="sr-only">
+      presentday — endless vaporwave transmission over a live view of a city in
+      Japan
+    </h1>
+    <p class="sr-only">
+      A continuous vaporwave broadcast set to a live view of a city in Japan:
+      music slowed and submerged. Present day, present time.
+    </p>
+
     <video id="video" muted autoplay playsinline></video>
 
     <div class="grain" aria-hidden="true"></div>
