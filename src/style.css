@@ -333,7 +333,7 @@ body {
   align-items: baseline;
   gap: 0.55em;
   max-width: 90vw;
-  font-size: clamp(10px, 1.15vw, 14px);
+  font-size: clamp(9px, 1.1vw, 13px);
   letter-spacing: 0.16em;
   color: var(--ink-dim);
   white-space: nowrap;
@@ -342,11 +342,6 @@ body {
 
 .now-playing[hidden] {
   display: none;
-}
-
-.np-icon {
-  color: var(--magenta);
-  text-shadow: 0 0 8px rgba(230, 89, 201, 0.5);
 }
 
 .np-artist {
