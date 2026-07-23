@@ -132,17 +132,36 @@ updateNowPlaying();
 setInterval(updateNowPlaying, 10_000);
 
 // ---------- Enable sound on first interaction ----------
-// Autoplay must start muted; unmute once the user interacts.
+// Autoplay must start muted; unmute once the user interacts. Chrome only honors
+// the unmute inside a real user gesture — use `click` (a full press+release),
+// which grants activation more reliably than `pointerdown`.
 const soundHint = document.getElementById('sound-hint');
+
+function stopListening() {
+  window.removeEventListener('click', enableSound);
+  window.removeEventListener('keydown', enableSound);
+}
 
 function enableSound() {
   video.muted = false;
   video.volume = 1;
-  video.play().catch(() => {});
-  soundHint.classList.add('hidden');
-  window.removeEventListener('pointerdown', enableSound);
-  window.removeEventListener('keydown', enableSound);
+  const p = video.play();
+  if (!p) {
+    soundHint.classList.add('hidden');
+    stopListening();
+    return;
+  }
+  p.then(() => {
+    // Unmuted playback accepted — done.
+    soundHint.classList.add('hidden');
+    stopListening();
+  }).catch(() => {
+    // Browser refused to unmute; keep the video running muted and leave the
+    // hint up so the next click can try again.
+    video.muted = true;
+    video.play().catch(() => {});
+  });
 }
 
-window.addEventListener('pointerdown', enableSound);
+window.addEventListener('click', enableSound);
 window.addEventListener('keydown', enableSound);
