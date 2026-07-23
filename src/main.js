@@ -1,21 +1,19 @@
-// Light build: drops alt-audio, subtitles, EME/DRM, CMCD — not needed for a
-// single fullscreen player. Same API, smaller bundle.
+// Use the light build, smaller and we do not need the extra features
 import Hls from 'hls.js/dist/hls.light.mjs';
 
-// Default stream, can be overridden via ?src=<url>
+// Stream URL, can be changed with ?src=<url>
 const DEFAULT_SRC = 'https://presentday.cc/hls/index.m3u8';
 
 const src = new URLSearchParams(location.search).get('src') ?? DEFAULT_SRC;
 const video = document.getElementById('video');
 
-// Kick playback explicitly: some mobile browsers (e.g. Samsung Internet) ignore
-// the `autoplay` attribute for MSE-backed video and leave it frozen on frame 0.
+// Some mobile browsers ignore the autoplay attribute so we start playback by hand
 function kickPlay() {
   const p = video.play();
-  if (p) p.catch(() => {}); // rejection is fine; a user tap will start it later
+  if (p) p.catch(() => {}); // A reject is fine, a tap will start it later
 }
 
-// Surface a fatal, unrecoverable error on screen (mobile has no devtools).
+// Show a fatal error on screen because phones have no devtools
 const errBox = document.getElementById('err');
 function showError(msg) {
   errBox.textContent = msg;
@@ -34,7 +32,7 @@ if (Hls.isSupported()) {
     if (!data.fatal) return;
     console.error('HLS fatal error:', data.type, data.details);
 
-    // Codec the browser's MSE can't handle — recovery is futile, so stop and report.
+    // The browser cannot play this codec so retrying will not help
     if (
       data.details === Hls.ErrorDetails.BUFFER_INCOMPATIBLE_CODECS_ERROR ||
       data.details === Hls.ErrorDetails.BUFFER_ADD_CODEC_ERROR
@@ -62,8 +60,8 @@ if (Hls.isSupported()) {
     }
   });
 
-  // Stall watchdog: on a live stream a mobile decoder can freeze while the audio
-  // keeps going. If playback stops advancing, snap back to the live edge.
+  // Watch for a freeze, the live video can stop while the audio keeps going
+  // If it stops moving, jump back to the live edge
   let lastTime = 0;
   let stalledFor = 0;
   setInterval(() => {
@@ -80,12 +78,42 @@ if (Hls.isSupported()) {
       lastTime = video.currentTime;
     }
   }, 1000);
+
+  // A tab coming back from background can show a black frozen frame
+  // Resume and jump to the live edge, but only if the video was playing before
+  // the tab was hidden, so a user pause is kept
+  let wasPlaying = false;
+  function onVisibility() {
+    if (document.visibilityState === 'hidden') {
+      wasPlaying = !video.paused;
+      return;
+    }
+    if (!wasPlaying) return;
+    const behind =
+      hls.liveSyncPosition != null &&
+      video.currentTime < hls.liveSyncPosition - 10;
+    if (video.paused || video.readyState < 3 || behind) {
+      hls.startLoad();
+      if (hls.liveSyncPosition != null) video.currentTime = hls.liveSyncPosition;
+      kickPlay();
+    }
+  }
+  document.addEventListener('visibilitychange', onVisibility);
+  window.addEventListener('pageshow', onVisibility);
 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-  // Safari / iOS — native HLS support
+  // Safari and iOS play HLS on their own
   video.src = src;
   video.addEventListener('loadedmetadata', kickPlay);
   video.addEventListener('error', () => {
     showError('playback error\n' + (video.error?.message ?? 'unknown'));
+  });
+  let wasPlaying = false;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      wasPlaying = !video.paused;
+    } else if (wasPlaying && video.paused) {
+      kickPlay();
+    }
   });
 } else {
   showError('HLS is not supported in this browser');
@@ -115,48 +143,89 @@ async function updateNowPlaying() {
     const res = await fetch('https://api.plaza.one/v2/status', {
       cache: 'no-store',
     });
-    if (!res.ok) return; // keep previous value on error
+    if (!res.ok) return; // On error keep the old value
     const { song } = await res.json();
     if (!song?.title) return;
     npArtist.textContent = song.artist ?? '';
     npTitle.textContent = song.title;
     nowPlaying.hidden = false;
   } catch {
-    // Network error — keep whatever is currently shown
+    // Network error, keep what is shown
   }
 }
 
 updateNowPlaying();
 setInterval(updateNowPlaying, 10_000);
 
-// Chrome only honors an unmute inside a real user gesture — use `click` (a full
-// press+release), which grants activation more reliably than `pointerdown`.
+// Video starts muted for autoplay, the button or the hint turns sound on
+// Chrome only allows unmute on a real click
 const soundHint = document.getElementById('sound-hint');
+const soundToggle = document.getElementById('sound-toggle');
 
-function stopListening() {
-  window.removeEventListener('click', enableSound);
-  window.removeEventListener('keydown', enableSound);
+// True only when the user paused with a video click or Space
+let userPaused = false;
+
+function updateMuteIcon() {
+  soundToggle.classList.toggle('muted', video.muted);
+  soundToggle.setAttribute('aria-label', video.muted ? 'Unmute' : 'Mute');
 }
 
 function enableSound() {
   video.muted = false;
   video.volume = 1;
-  const p = video.play();
-  if (!p) {
+  // If the user paused the video, only turn on sound and leave it paused
+  if (userPaused) {
     soundHint.classList.add('hidden');
-    stopListening();
     return;
   }
-  p.then(() => {
-    soundHint.classList.add('hidden');
-    stopListening();
-  }).catch(() => {
-    // Browser refused to unmute; keep the video running muted and leave the
-    // hint up so the next click can try again.
+  const p = video.play();
+  const done = () => soundHint.classList.add('hidden');
+  if (!p) {
+    done();
+    return;
+  }
+  p.then(done).catch(() => {
+    // Browser did not allow unmute, go back to muted and keep the hint
     video.muted = true;
     video.play().catch(() => {});
   });
 }
 
-window.addEventListener('click', enableSound);
-window.addEventListener('keydown', enableSound);
+function toggleMute() {
+  if (video.muted) enableSound();
+  else video.muted = true;
+}
+
+soundHint.addEventListener('click', enableSound);
+soundToggle.addEventListener('click', toggleMute);
+video.addEventListener('volumechange', updateMuteIcon);
+updateMuteIcon();
+
+// Play or pause by clicking the video or pressing Space
+function togglePlay() {
+  if (video.paused) {
+    userPaused = false;
+    video.play().catch(() => {});
+  } else {
+    userPaused = true;
+    video.pause();
+  }
+}
+
+video.addEventListener('click', togglePlay);
+
+window.addEventListener('keydown', (e) => {
+  // Skip Space if a button is focused so the button gets the key
+  if (e.code === 'Space' && !(e.target instanceof HTMLButtonElement)) {
+    e.preventDefault();
+    togglePlay();
+  }
+});
+
+// Eye button hides the whole interface and leaves only the video
+const uiToggle = document.getElementById('ui-toggle');
+uiToggle.addEventListener('click', () => {
+  const hidden = document.body.classList.toggle('ui-hidden');
+  uiToggle.classList.toggle('off', hidden);
+  uiToggle.setAttribute('aria-label', hidden ? 'Show interface' : 'Hide interface');
+});

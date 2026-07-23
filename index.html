@@ -78,7 +78,7 @@
     <div class="vignette" aria-hidden="true"></div>
 
     <header class="bar bar--top">
-      <span class="bar__left">presentday.cc</span>
+      <a class="bar__left" href="/">presentday.cc</a>
       <span class="bar__right">
         <span class="loc">渋谷 SHIBUYA</span>
         <span class="sep">・</span>
@@ -90,6 +90,16 @@
     </header>
 
     <footer class="bar bar--bottom">
+      <button id="sound-toggle" class="sound-toggle muted" type="button" aria-label="Unmute">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <polygon class="spk" points="3,9 7,9 12,5 12,19 7,15 3,15" />
+          <g class="waves">
+            <path d="M15.5 8.5 a5 5 0 0 1 0 7" />
+            <path d="M18 6 a8.5 8.5 0 0 1 0 12" />
+          </g>
+          <line class="slash" x1="15" y1="7" x2="21.5" y2="17.5" />
+        </svg>
+      </button>
       <span id="now-playing" class="now-playing" hidden>
         <span class="np-icon">♪</span>
         <span class="np-artist"></span>
@@ -101,6 +111,14 @@
     <span class="wired" aria-hidden="true">present day, present time</span>
 
     <button id="sound-hint" class="sound-hint" type="button">[ click to enable sound ]</button>
+
+    <button id="ui-toggle" class="ui-toggle" type="button" aria-label="Hide interface">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path class="eye-shape" d="M2 12 Q12 4 22 12 Q12 20 2 12 Z" />
+        <circle class="eye-pupil" cx="12" cy="12" r="3.2" />
+        <line class="eye-slash" x1="4" y1="4" x2="20" y2="20" />
+      </svg>
+    </button>
 
     <!-- Error readout, shown on fatal playback failure (devices have no devtools) -->
     <div id="err" class="err" hidden></div>

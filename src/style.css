@@ -9,16 +9,16 @@
 :root {
   --cyan: #58e6e0;
   --magenta: #e659c9;
-  /* letterbox bar height — clamped so bars stay usable on short/tall screens */
+  /* Bar height, clamped so it stays usable on short and tall screens */
   --bar-h: clamp(36px, 8vh, 88px);
   --ink: rgba(200, 240, 240, 0.82);
   --ink-dim: rgba(160, 200, 200, 0.45);
-  --grain-opacity: 0.09; /* interference intensity — bump up for more noise */
+  --grain-opacity: 0.09; /* Noise amount, raise for more grain */
   --font-mono: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', Consolas,
     monospace;
 }
 
-/* Use dynamic viewport height where supported (avoids mobile address-bar jump) */
+/* Dynamic viewport height, avoids a jump when the mobile address bar shows */
 @supports (height: 100dvh) {
   :root {
     --bar-h: clamp(36px, 8dvh, 88px);
@@ -61,17 +61,17 @@ body {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* dynamic vh: stable under mobile browser chrome */
-  /* cover — fill the screen; landscape source acts as a background */
+  height: 100dvh; /* Dynamic vh, stable when mobile browser bars show */
+  /* Cover the whole screen, the video works as a background */
   object-fit: cover;
   background: #000;
   z-index: 0;
+  cursor: pointer;
 }
 
 /*
- * Portrait screens: switch to `contain` so the horizontal Shibuya feed stays
- * fully visible instead of being cropped to a narrow vertical slice.
- * The resulting letterbox merges with the design's black bars.
+ * Portrait screens use contain so the wide video stays fully visible instead
+ * of being cropped to a narrow strip, the letterbox blends with the black bars
  */
 @media (orientation: portrait) {
   #video {
@@ -80,7 +80,7 @@ body {
 }
 
 /* ---------- CRT overlays ---------- */
-/* Film grain: fractal-noise tile shuffled at a low frame rate to keep it cheap */
+/* Film grain, a noise tile moved at a low frame rate to keep it cheap */
 .grain {
   position: fixed;
   inset: 0;
@@ -111,7 +111,7 @@ body {
   }
 }
 
-/* Tracking dropout: a soft band that sweeps down rarely, like signal glitch */
+/* A soft band that sweeps down now and then, like a signal glitch */
 .tracking {
   position: fixed;
   left: 0;
@@ -222,6 +222,8 @@ body {
 .bar__left {
   color: var(--cyan);
   text-shadow: 0 0 8px rgba(88, 230, 224, 0.5);
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .bar__right {
@@ -274,13 +276,63 @@ body {
   }
 }
 
+/* ---------- Sound toggle (bottom-left) ---------- */
+.sound-toggle {
+  position: absolute;
+  left: 3vw;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(24px, 3.4vh, 34px);
+  height: clamp(24px, 3.4vh, 34px);
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-dim);
+  transition: color 0.2s;
+}
+
+.sound-toggle:hover {
+  color: var(--cyan);
+}
+
+.sound-toggle svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sound-toggle .spk {
+  fill: currentColor;
+}
+.sound-toggle .waves path,
+.sound-toggle .slash {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+/* When muted, hide the waves and show the slash */
+.sound-toggle .slash {
+  display: none;
+}
+.sound-toggle.muted .waves {
+  display: none;
+}
+.sound-toggle.muted .slash {
+  display: inline;
+}
+
 /* ---------- Now playing (bottom bar) ---------- */
 .now-playing {
   display: inline-flex;
   align-items: baseline;
   gap: 0.55em;
   max-width: 90vw;
-  font-size: clamp(9px, 1vw, 12px);
+  font-size: clamp(10px, 1.15vw, 14px);
   letter-spacing: 0.16em;
   color: var(--ink-dim);
   white-space: nowrap;
@@ -347,6 +399,78 @@ body {
   display: none;
 }
 
+/* ---------- Interface toggle (eye, bottom-right) ---------- */
+.ui-toggle {
+  position: fixed;
+  right: 3vw;
+  bottom: 0;
+  height: var(--bar-h);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-dim);
+  transition: color 0.2s, opacity 0.3s;
+}
+
+.ui-toggle:hover {
+  color: var(--cyan);
+}
+
+.ui-toggle svg {
+  width: clamp(24px, 3.4vh, 34px);
+  height: clamp(24px, 3.4vh, 34px);
+}
+
+.ui-toggle .eye-shape,
+.ui-toggle .eye-slash {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ui-toggle .eye-pupil {
+  fill: currentColor;
+}
+
+/* When the interface is hidden, show the slashed eye */
+.ui-toggle .eye-slash {
+  display: none;
+}
+.ui-toggle.off .eye-slash {
+  display: inline;
+}
+.ui-toggle.off .eye-pupil {
+  display: none;
+}
+
+/* Immersive mode, the eye hides all the interface over the video */
+.bar,
+.wired,
+.sound-hint {
+  transition: opacity 0.3s;
+}
+.ui-hidden .bar,
+.ui-hidden .wired {
+  opacity: 0;
+  pointer-events: none;
+}
+.ui-hidden .sound-hint {
+  animation: none;
+  opacity: 0;
+  pointer-events: none;
+}
+.ui-hidden .ui-toggle {
+  opacity: 0.35;
+}
+.ui-hidden .ui-toggle:hover {
+  opacity: 1;
+}
+
 /* ---------- Fatal error readout ---------- */
 .err {
   position: fixed;
@@ -382,7 +506,7 @@ body {
     gap: 0.5em;
   }
 
-  /* Trim the HUD so it never overflows: keep LIVE + clock, drop the rest */
+  /* Keep only LIVE and the clock so the HUD does not overflow */
   .loc,
   .loc + .sep,
   .tz {
@@ -409,7 +533,7 @@ body {
     animation: none;
   }
 
-  /* Drop the sweeping glitch entirely for motion-sensitive users */
+  /* Turn off the sweeping glitch for users who want less motion */
   .tracking {
     display: none;
   }
