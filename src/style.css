@@ -15,7 +15,8 @@
   --ink-dim: rgba(160, 200, 200, 0.45);
   --grain-opacity: 0.09; /* Noise amount, raise for more grain */
   --font-mono: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', Consolas,
-    monospace;
+    'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Yu Gothic UI',
+    'Noto Sans CJK JP', 'Noto Sans JP', Meiryo, monospace;
 }
 
 /* Dynamic viewport height, avoids a jump when the mobile address bar shows */
@@ -53,6 +54,9 @@ body {
   font-family: var(--font-mono);
   cursor: default;
   user-select: none;
+  -webkit-user-select: none;
+  /* Remove the blue tap flash on Android when the video is tapped */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ---------- Background video ---------- */
@@ -235,9 +239,6 @@ body {
 
 .sep {
   color: var(--ink-dim);
-}
-.loc {
-  color: var(--ink);
 }
 .tz {
   color: var(--ink-dim);
@@ -506,7 +507,7 @@ body {
     gap: 0.5em;
   }
 
-  /* Keep only LIVE and the clock so the HUD does not overflow */
+  /* Trim the HUD on phones so it does not overflow */
   .loc,
   .loc + .sep,
   .tz {
