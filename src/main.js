@@ -8,10 +8,20 @@ const DEFAULT_SRC = 'https://presentday.cc/hls/index.m3u8';
 const src = new URLSearchParams(location.search).get('src') ?? DEFAULT_SRC;
 const video = document.getElementById('video');
 
+// Kick playback explicitly: some mobile browsers (e.g. Samsung Internet) ignore
+// the `autoplay` attribute for MSE-backed video and leave it frozen on frame 0.
+function kickPlay() {
+  const p = video.play();
+  if (p) p.catch(() => {}); // rejection is fine; a user tap will start it later
+}
+
 if (Hls.isSupported()) {
   const hls = new Hls();
   hls.loadSource(src);
   hls.attachMedia(video);
+
+  hls.on(Hls.Events.MANIFEST_PARSED, kickPlay);
+
   hls.on(Hls.Events.ERROR, (_event, data) => {
     if (data.fatal) {
       console.error('HLS fatal error:', data.type, data.details);
@@ -27,9 +37,29 @@ if (Hls.isSupported()) {
       }
     }
   });
+
+  // Stall watchdog: on a live stream a mobile decoder can freeze while the audio
+  // keeps going. If playback stops advancing, snap back to the live edge.
+  let lastTime = 0;
+  let stalledFor = 0;
+  setInterval(() => {
+    if (video.paused || video.readyState < 3) return;
+    if (video.currentTime === lastTime) {
+      stalledFor += 1;
+      if (stalledFor >= 3 && hls.liveSyncPosition != null) {
+        video.currentTime = hls.liveSyncPosition;
+        kickPlay();
+        stalledFor = 0;
+      }
+    } else {
+      stalledFor = 0;
+      lastTime = video.currentTime;
+    }
+  }, 1000);
 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
   // Safari / iOS — native HLS support
   video.src = src;
+  video.addEventListener('loadedmetadata', kickPlay);
 } else {
   console.error('HLS is not supported in this browser');
 }
