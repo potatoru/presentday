@@ -10,7 +10,7 @@
   --cyan: #58e6e0;
   --magenta: #e659c9;
   /* letterbox bar height — clamped so bars stay usable on short/tall screens */
-  --bar-h: clamp(40px, 9vh, 100px);
+  --bar-h: clamp(36px, 8vh, 88px);
   --ink: rgba(200, 240, 240, 0.82);
   --ink-dim: rgba(160, 200, 200, 0.45);
   --grain-opacity: 0.09; /* interference intensity — bump up for more noise */
@@ -21,7 +21,7 @@
 /* Use dynamic viewport height where supported (avoids mobile address-bar jump) */
 @supports (height: 100dvh) {
   :root {
-    --bar-h: clamp(40px, 9dvh, 100px);
+    --bar-h: clamp(36px, 8dvh, 88px);
   }
 }
 
@@ -267,7 +267,7 @@ body {
   align-items: baseline;
   gap: 0.55em;
   max-width: 90vw;
-  font-size: clamp(10px, 1.15vw, 14px);
+  font-size: clamp(9px, 1vw, 12px);
   letter-spacing: 0.16em;
   color: var(--ink-dim);
   white-space: nowrap;
